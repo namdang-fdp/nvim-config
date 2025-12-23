@@ -6,8 +6,52 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Tắt LSP progress notifications (toast notifications)
+-- Tắt LSP progress notifications
 vim.lsp.handlers["$/progress"] = function() end
+
+-- Tắt tất cả các notifications không cần thiết
+local notify = vim.notify
+vim.notify = function(msg, level, opts)
+	-- Chặn các messages không quan trọng
+	if msg:match("warning: multiple different client offset_encodings") then
+		return
+	end
+	if msg:match("method textDocument") then
+		return
+	end
+	if msg:match("method workspace") then
+		return
+	end
+	if msg:match("gofumpt") then
+		return
+	end
+	if msg:match("formatting") then
+		return
+	end
+	if msg:match("Press ENTER") then
+		return
+	end
+	if msg:match("null-ls") then
+		return
+	end
+	if msg:match("golangci_lint") then
+		return
+	end
+	if msg:match("max_line_len") then
+		return
+	end
+	if msg:match("Go development mode") then
+		return
+	end
+	if msg:match("which-key") then
+		return
+	end
+
+	-- Chỉ hiện errors thực sự
+	if level == vim.log.levels.ERROR then
+		notify(msg, level, opts)
+	end
+end
 
 -- Line numbers
 vim.opt.number = true
@@ -42,3 +86,10 @@ vim.opt.smartindent = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 vim.opt.inccommand = "split"
+
+-- Tắt các messages dài
+vim.opt.shortmess:append("c")
+vim.opt.shortmess:append("F")
+
+-- Tắt cmdheight để bớt "Press ENTER"
+vim.opt.cmdheight = 1

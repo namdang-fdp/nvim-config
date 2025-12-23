@@ -29,7 +29,8 @@ return {
 			json = { "prettier" },
 			yaml = { "prettier" },
 			markdown = { "prettier" },
-			go = { "goimports", "gofumpt" },
+			-- Go formatting - use goimports only (more stable)
+			go = { "goimports" },
 			java = { "google-java-format" },
 			lua = { "stylua" },
 		},
@@ -38,9 +39,18 @@ return {
 				prepend_args = { "--aosp" },
 			},
 		},
-		format_on_save = {
-			timeout_ms = 3000,
-			lsp_fallback = true,
-		},
+		-- Disable format on save for Go (go.nvim handles it)
+		format_on_save = function(bufnr)
+			-- Disable for Go files (go.nvim handles formatting)
+			if vim.bo[bufnr].filetype == "go" then
+				return
+			end
+			return {
+				timeout_ms = 3000,
+				lsp_fallback = true,
+			}
+		end,
+		-- Suppress notifications
+		notify_on_error = false,
 	},
 }
