@@ -65,72 +65,8 @@ return {
 			tailwindcss = {},
 			-- JSON
 			jsonls = {},
-			-- Java
-			jdtls = {
-				settings = {
-					java = {
-						configuration = {
-							runtimes = {},
-						},
-						eclipse = {
-							downloadSources = true,
-						},
-						maven = {
-							downloadSources = true,
-						},
-						implementationsCodeLens = {
-							enabled = true,
-						},
-						referencesCodeLens = {
-							enabled = true,
-						},
-						references = {
-							includeDecompiledSources = true,
-						},
-						format = {
-							enabled = true,
-						},
-					},
-					signatureHelp = { enabled = true },
-					completion = {
-						favoriteStaticMembers = {
-							"org.hamcrest.MatcherAssert.assertThat",
-							"org.hamcrest.Matchers.*",
-							"org.hamcrest.CoreMatchers.*",
-							"org.junit.jupiter.api.Assertions.*",
-							"java.util.Objects.requireNonNull",
-							"java.util.Objects.requireNonNullElse",
-							"org.mockito.Mockito.*",
-						},
-					},
-					contentProvider = { preferred = "fernflower" },
-					extendedClientCapabilities = {
-						progressReportProvider = false,
-					},
-					sources = {
-						organizeImports = {
-							starThreshold = 9999,
-							staticStarThreshold = 9999,
-						},
-					},
-					codeGeneration = {
-						toString = {
-							template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
-						},
-						useBlocks = true,
-					},
-				},
-				init_options = {
-					bundles = {},
-					extendedClientCapabilities = {
-						progressReportProvider = false,
-					},
-				},
-				on_attach = function(client, bufnr)
-					client.server_capabilities.documentFormattingProvider = false
-					client.server_capabilities.documentRangeFormattingProvider = false
-				end,
-			},
+			-- Java - KHÔNG DÙNG CONFIG NÀY, dùng ftplugin/java.lua
+			-- jdtls = { ... },  -- ← XÓA HOẶC COMMENT toàn bộ phần này
 		}
 
 		-- Mason setup
@@ -164,6 +100,10 @@ return {
 		require("mason-lspconfig").setup({
 			handlers = {
 				function(server_name)
+					if server_name == "jdtls" then
+						return
+					end
+
 					local server = servers[server_name] or {}
 					server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
 					require("lspconfig")[server_name].setup(server)
