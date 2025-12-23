@@ -1,3 +1,7 @@
+-- ============================================
+-- JAVA FILETYPE CONFIGURATION
+-- ============================================
+
 -- Check if jdtls is available
 local jdtls_ok, jdtls = pcall(require, "jdtls")
 if not jdtls_ok then
@@ -5,10 +9,9 @@ if not jdtls_ok then
 	return
 end
 
--- Đường dẫn đến Lombok JAR
+-- Lombok path
 local lombok_path = vim.fn.expand("~/.local/share/nvim/lombok/lombok.jar")
 
--- Kiểm tra xem Lombok JAR có tồn tại không
 if vim.fn.filereadable(lombok_path) == 0 then
 	vim.notify("Lombok JAR not found at: " .. lombok_path, vim.log.levels.WARN)
 	return
@@ -31,28 +34,22 @@ elseif vim.fn.has("win32") == 1 then
 	os_config = "config_win"
 end
 
--- Project name for workspace
+-- Project workspace
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
 local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_name
 
--- Helper function to find root directory
+-- Root directory finder
 local function get_root_dir()
 	return require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" })
 end
 
--- Cấu hình JDTLS với Lombok + MapStruct
+-- JDTLS configuration
 local config = {
 	cmd = {
 		"java",
-
-		-- Lombok agent
 		"-javaagent:" .. lombok_path,
-
-		-- Memory settings
 		"-Xms1g",
 		"-Xmx2g",
-
-		-- JDTLS specific
 		"-Declipse.application=org.eclipse.jdt.ls.core.id1",
 		"-Dosgi.bundles.defaultStartLevel=4",
 		"-Declipse.product=org.eclipse.jdt.ls.core.product",
@@ -64,16 +61,10 @@ local config = {
 		"java.base/java.util=ALL-UNNAMED",
 		"--add-opens",
 		"java.base/java.lang=ALL-UNNAMED",
-
-		-- JAR
 		"-jar",
 		launcher_jar,
-
-		-- Configuration
 		"-configuration",
 		mason_path .. "/" .. os_config,
-
-		-- Workspace
 		"-data",
 		workspace_dir,
 	},
@@ -87,7 +78,6 @@ local config = {
 			},
 			configuration = {
 				updateBuildConfiguration = "automatic",
-				-- Thêm annotation processor paths
 				runtimes = {},
 			},
 			maven = {
@@ -106,7 +96,6 @@ local config = {
 			format = {
 				enabled = true,
 			},
-			-- Bật hỗ trợ annotation processing (cho MapStruct, Lombok)
 			autobuild = {
 				enabled = true,
 			},
@@ -135,7 +124,6 @@ local config = {
 					staticStarThreshold = 9999,
 				},
 			},
-			-- Bật annotation processing
 			project = {
 				referencedLibraries = {
 					"lib/**/*.jar",
@@ -165,10 +153,8 @@ local config = {
 	},
 
 	on_attach = function(client, bufnr)
-		-- Enable completion triggered by <c-x><c-o>
 		vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
 
-		-- Mappings
 		local opts = { noremap = true, silent = true, buffer = bufnr }
 		vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
 		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
