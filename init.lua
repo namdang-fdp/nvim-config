@@ -11,7 +11,6 @@ require("core.keymaps")
 require("core.autocmds")
 require("core.diagnostic-config")
 require("core.java-autocmd")
-
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then

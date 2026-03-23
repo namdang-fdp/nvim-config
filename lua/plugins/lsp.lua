@@ -57,6 +57,14 @@ return {
 			},
 			-- TypeScript/JavaScript
 			ts_ls = {},
+			eslint = {
+				on_attach = function(client, bufnr)
+					vim.api.nvim_create_autocmd("BufWritePre", {
+						buffer = bufnr,
+						command = "EslintFixAll",
+					})
+				end,
+			},
 			-- HTML
 			html = {},
 			-- CSS
@@ -65,8 +73,25 @@ return {
 			tailwindcss = {},
 			-- JSON
 			jsonls = {},
-			-- Java - KHÔNG DÙNG CONFIG NÀY, dùng ftplugin/java.lua
-			-- jdtls = { ... },  -- ← XÓA HOẶC COMMENT toàn bộ phần này
+
+			pyright = {
+				settings = {
+					python = {
+						analysis = {
+							typeCheckingMode = "basic", -- "off", "basic", "strict"
+							autoSearchPaths = true,
+							useLibraryCodeForTypes = true,
+							diagnosticMode = "workspace",
+						},
+					},
+				},
+			},
+			omnisharp = {
+				cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
+				enable_roslyn_analyzers = true,
+				enable_import_completion = true,
+				organize_imports_on_format = true,
+			},
 		}
 
 		-- Mason setup
@@ -83,6 +108,7 @@ return {
 				"stylua",
 				-- TypeScript/JavaScript
 				"typescript-language-server",
+				"eslint-lsp",
 				"prettier",
 				"eslint_d",
 				-- HTML/CSS
@@ -94,6 +120,12 @@ return {
 				-- Java
 				"jdtls",
 				"google-java-format",
+				-- Python
+				"pyright",
+				"ruff", -- ← Python linter/formatter
+				"black", -- ← Python formatter
+				-- C#
+				"csharpier", -- ← C# formatter (optional)
 			},
 		})
 

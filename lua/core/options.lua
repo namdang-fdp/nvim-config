@@ -137,3 +137,4 @@ vim.opt.shortmess:append("F")
 
 -- Cmdheight
 vim.opt.cmdheight = 1
+vim.opt.linespace = 6

@@ -7,7 +7,7 @@ if not vim.g.neovide then
 end
 
 -- Font
-vim.o.guifont = "CaskaydiaCove Nerd Font Mono:h17"
+vim.o.guifont = "Maple Mono NF:h16"
 
 -- Cursor animations
 vim.g.neovide_cursor_animation_length = 0.18
