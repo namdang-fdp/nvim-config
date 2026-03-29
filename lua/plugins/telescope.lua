@@ -1,7 +1,6 @@
 -- ============================================
--- TELESCOPE - FIXED FOR MODULAR MONOLITH
+-- TELESCOPE - ENHANCED FOR BETTER DX
 -- ============================================
-
 return {
 	"nvim-telescope/telescope.nvim",
 	event = "VimEnter",
@@ -19,24 +18,46 @@ return {
 
 		telescope.setup({
 			defaults = {
-				-- CRITICAL: Don't ignore these patterns for modular monolith
+				-- File ignore patterns
 				file_ignore_patterns = {
 					"node_modules",
 					".git/",
-					"target/classes", -- Ignore compiled classes only
+					"target/classes",
 					"build/classes",
 				},
+
+				-- Better layout
 				layout_config = {
 					horizontal = {
 						preview_width = 0.55,
+						prompt_position = "top",
 					},
+					width = 0.87,
+					height = 0.80,
 				},
+				sorting_strategy = "ascending",
+
+				-- Better prompts
+				prompt_prefix = "🔍 ",
+				selection_caret = "➜ ",
+				path_display = { "truncate" },
+
+				-- Mappings
 				mappings = {
 					i = {
 						["<C-j>"] = actions.move_selection_next,
 						["<C-k>"] = actions.move_selection_previous,
+						["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+						["<C-d>"] = actions.delete_buffer, -- Delete buffer in buffer picker
+						["<C-u>"] = false, -- Disable default clear prompt
+					},
+					n = {
+						["q"] = actions.close,
+						["<C-d>"] = actions.delete_buffer,
 					},
 				},
+
+				-- Ripgrep arguments
 				vimgrep_arguments = {
 					"rg",
 					"--color=never",
@@ -45,21 +66,21 @@ return {
 					"--line-number",
 					"--column",
 					"--smart-case",
-					"--hidden", -- Search hidden files
-					"--glob=!.git/", -- But ignore .git
+					"--hidden",
+					"--glob=!.git/",
+					"--glob=!target/classes/",
+					"--glob=!build/classes/",
 				},
 			},
+
 			pickers = {
 				find_files = {
 					hidden = true,
-					-- CRITICAL: Search from project root, not cwd
-					cwd = vim.fn.getcwd(),
-					-- Follow symlinks
 					follow = true,
-					-- Don't respect gitignore for Java modules
 					no_ignore = false,
 					no_ignore_parent = false,
 				},
+
 				live_grep = {
 					additional_args = function()
 						return {
@@ -69,36 +90,97 @@ return {
 							"--glob=!build/classes/",
 						}
 					end,
-					-- CRITICAL: Search all subdirectories
-					cwd = vim.fn.getcwd(),
+				},
+
+				buffers = {
+					sort_lastused = true,
+					sort_mru = true,
+					ignore_current_buffer = true,
+					mappings = {
+						i = {
+							["<c-d>"] = actions.delete_buffer,
+						},
+						n = {
+							["<c-d>"] = actions.delete_buffer,
+							["dd"] = actions.delete_buffer,
+						},
+					},
+				},
+
+				oldfiles = {
+					only_cwd = true, -- Chỉ show recent files trong project hiện tại
 				},
 			},
 		})
 
+		-- Load extensions
 		pcall(telescope.load_extension, "fzf")
 
 		local builtin = require("telescope.builtin")
 
-		-- FIXED: Search all files in project
+		-- ==================== FILE NAVIGATION ====================
+
+		-- Find files
 		vim.keymap.set("n", "<leader>ff", function()
 			builtin.find_files({
-				cwd = vim.fn.getcwd(),
 				hidden = true,
 				no_ignore = false,
 			})
 		end, { desc = "Find files" })
 
-		-- FIXED: Grep all files in project
+		-- Find ALL files (including gitignored)
+		vim.keymap.set("n", "<leader>fF", function()
+			builtin.find_files({
+				hidden = true,
+				no_ignore = true,
+			})
+		end, { desc = "Find ALL files (no ignore)" })
+
+		-- Recent files
+		vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
+
+		-- ==================== SEARCH ====================
+
+		-- Live grep
 		vim.keymap.set("n", "<leader>fg", function()
 			builtin.live_grep({
-				cwd = vim.fn.getcwd(),
 				additional_args = { "--hidden" },
 			})
-		end, { desc = "Grep text (tìm kiếm nội dung)" })
+		end, { desc = "Live grep" })
 
+		-- Grep word under cursor
+		vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Find word under cursor" })
+
+		-- ==================== BUFFERS ====================
+
+		-- Buffer picker (enhanced)
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find buffers" })
-		vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Find help" })
-		vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
-		vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Grep word under cursor" })
+		vim.keymap.set("n", "<leader>bb", builtin.buffers, { desc = "Buffer picker" })
+
+		-- ==================== GIT ====================
+
+		vim.keymap.set("n", "<leader>gc", builtin.git_commits, { desc = "Git commits" })
+		vim.keymap.set("n", "<leader>gs", builtin.git_status, { desc = "Git status" })
+		vim.keymap.set("n", "<leader>gb", builtin.git_branches, { desc = "Git branches" })
+
+		-- ==================== LSP ====================
+
+		vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Document symbols" })
+		vim.keymap.set("n", "<leader>fS", builtin.lsp_workspace_symbols, { desc = "Workspace symbols" })
+		vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
+
+		-- ==================== HELP ====================
+
+		vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
+		vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Keymaps" })
+		vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Commands" })
+
+		-- ==================== EXTRAS ====================
+
+		-- Find in current buffer
+		vim.keymap.set("n", "<leader>/", builtin.current_buffer_fuzzy_find, { desc = "Search in current buffer" })
+
+		-- Resume last picker
+		vim.keymap.set("n", "<leader>f.", builtin.resume, { desc = "Resume last picker" })
 	end,
 }

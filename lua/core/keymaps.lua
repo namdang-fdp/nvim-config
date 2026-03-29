@@ -58,3 +58,19 @@ vim.keymap.set("n", "[w", function()
 end, { desc = "Previous warning" })
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 vim.keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<CR>", { desc = "List all diagnostics" })
+
+-- Quick buffer close without losing window
+vim.keymap.set("n", "<leader>c", "<cmd>bp|bd #<CR>", { desc = "Close buffer keep window" })
+
+-- Switch to last buffer
+vim.keymap.set("n", "<leader><leader>", "<cmd>e #<CR>", { desc = "Switch to last buffer" })
+
+-- ============================================
+-- OIL.NVIM FILE NAVIGATION
+-- ============================================
+-- Open parent directory (Oil's signature move)
+vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
+
+-- File explorer commands
+vim.keymap.set("n", "<leader>e", "<cmd>Oil --float<cr>", { desc = "Oil floating explorer" }) -- ← Float làm mặc định
+vim.keymap.set("n", "<leader>fe", "<cmd>Oil<cr>", { desc = "Oil full window" })
