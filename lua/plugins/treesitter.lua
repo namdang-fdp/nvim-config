@@ -4,10 +4,16 @@
 
 return {
 	"nvim-treesitter/nvim-treesitter",
+	branch = "master",
 	build = ":TSUpdate",
 	config = function()
 		require("nvim-treesitter.configs").setup({
 			ensure_installed = {
+				-- C/C++
+				"c",
+				"cpp",
+				"cmake",
+				"cuda",
 				-- Go
 				"go",
 				"gomod",
@@ -40,6 +46,7 @@ return {
 			auto_install = true,
 			highlight = {
 				enable = true,
+				disable = { "markdown", "markdown_inline" },
 				additional_vim_regex_highlighting = false,
 			},
 			indent = { enable = true },

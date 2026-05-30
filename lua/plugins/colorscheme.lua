@@ -3,11 +3,11 @@
 -- ============================================
 
 return {
-	-- Catppuccin (Active)
+	-- Catppuccin (kept installed for quick rollback)
 	{
 		"catppuccin/nvim",
 		name = "catppuccin",
-		priority = 1000,
+		priority = 900,
 		config = function()
 			require("catppuccin").setup({
 				flavour = "mocha",
@@ -44,28 +44,27 @@ return {
 					which_key = true,
 				},
 			})
-			vim.cmd.colorscheme("catppuccin")
 		end,
 	},
 
-	-- Tokyo Night (Commented)
-	-- {
-	-- 	"folke/tokyonight.nvim",
-	-- 	priority = 1000,
-	-- 	config = function()
-	-- 		require("tokyonight").setup({
-	-- 			style = "night",
-	-- 			transparent = true,
-	-- 			terminal_colors = true,
-	-- 			styles = {
-	-- 				comments = { italic = true },
-	-- 				keywords = { italic = true },
-	-- 				functions = { bold = true },
-	-- 			},
-	-- 		})
-	-- 		vim.cmd.colorscheme("tokyonight")
-	-- 	end,
-	-- },
+	-- Tokyo Night (Active)
+	{
+		"folke/tokyonight.nvim",
+		priority = 1000,
+		config = function()
+			require("tokyonight").setup({
+				style = "storm",
+				transparent = true,
+				terminal_colors = true,
+				styles = {
+					comments = { italic = true },
+					keywords = { italic = true },
+					functions = { bold = true },
+				},
+			})
+			vim.cmd.colorscheme("tokyonight-storm")
+		end,
+	},
 
 	-- Kanagawa (Commented)
 	-- {

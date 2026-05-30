@@ -92,6 +92,44 @@ return {
 				enable_import_completion = true,
 				organize_imports_on_format = true,
 			},
+			-- C/C++
+			clangd = {
+				cmd = {
+					"clangd",
+					"--background-index",
+					"--clang-tidy",
+					"--header-insertion=iwyu",
+					"--completion-style=detailed",
+					"--function-arg-placeholders",
+					"--fallback-style=llvm",
+					"--query-driver=/usr/sbin/g++,/usr/sbin/clang++,/usr/bin/g++,/usr/bin/clang++",
+				},
+				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+				root_dir = function(fname)
+					return require("lspconfig.util").root_pattern(
+						"compile_commands.json",
+						"compile_flags.txt",
+						"CMakeLists.txt",
+						".clangd",
+						".git"
+					)(fname)
+				end,
+				init_options = {
+					usePlaceholders = true,
+					completeUnimported = true,
+					clangdFileStatus = true,
+				},
+				settings = {
+					clangd = {
+						InlayHints = {
+							Enabled = true,
+							ParameterNames = true,
+							DeducedTypes = true,
+							BlockEndComments = true,
+						},
+					},
+				},
+			},
 		}
 
 		-- Mason setup
@@ -104,7 +142,7 @@ return {
 				"gofumpt",
 				"golangci-lint",
 				-- Lua
-				"lua_ls",
+				"lua-language-server",
 				"stylua",
 				-- TypeScript/JavaScript
 				"typescript-language-server",
@@ -126,20 +164,25 @@ return {
 				"black", -- ← Python formatter
 				-- C#
 				"csharpier", -- ← C# formatter (optional)
+				-- C/C++
+				"clangd",         -- LSP (system clangd ≥ 15 already installed, Mason as fallback)
+				"clang-format",   -- formatter
+				"codelldb",       -- debug adapter (lldb-based)
+				"cpptools",       -- Microsoft C/C++ debug tools (optional fallback)
+			},
+			integrations = {
+				["mason-lspconfig"] = true,
 			},
 		})
 
-		require("mason-lspconfig").setup({
-			handlers = {
-				function(server_name)
-					if server_name == "jdtls" then
-						return
-					end
+		for server_name, server in pairs(servers) do
+			server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
+			vim.lsp.config(server_name, server)
+		end
 
-					local server = servers[server_name] or {}
-					server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-					require("lspconfig")[server_name].setup(server)
-				end,
+		require("mason-lspconfig").setup({
+			automatic_enable = {
+				exclude = { "jdtls" },
 			},
 		})
 	end,

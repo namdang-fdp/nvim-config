@@ -40,10 +40,6 @@ vim.notify = function(msg, level, opts)
 	if msg:match("Go development mode") then
 		return
 	end
-	if msg:match("which-key") then
-		return
-	end
-
 	-- QUAN TRỌNG: Vẫn hiện warnings và errors
 	if level == vim.log.levels.WARN or level == vim.log.levels.ERROR then
 		notify(msg, level, opts)

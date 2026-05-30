@@ -71,6 +71,6 @@ vim.keymap.set("n", "<leader><leader>", "<cmd>e #<CR>", { desc = "Switch to last
 -- Open parent directory (Oil's signature move)
 vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
 
--- File explorer commands
-vim.keymap.set("n", "<leader>e", "<cmd>Oil --float<cr>", { desc = "Oil floating explorer" }) -- ← Float làm mặc định
-vim.keymap.set("n", "<leader>fe", "<cmd>Oil<cr>", { desc = "Oil full window" })
+-- File operation commands
+vim.keymap.set("n", "<leader>o", "<cmd>Oil --float<cr>", { desc = "Oil file operations" })
+vim.keymap.set("n", "<leader>O", "<cmd>Oil<cr>", { desc = "Oil full window" })

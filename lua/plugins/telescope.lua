@@ -36,6 +36,9 @@ return {
 					height = 0.80,
 				},
 				sorting_strategy = "ascending",
+				preview = {
+					treesitter = false,
+				},
 
 				-- Better prompts
 				prompt_prefix = "🔍 ",
@@ -160,7 +163,7 @@ return {
 		-- ==================== GIT ====================
 
 		vim.keymap.set("n", "<leader>gc", builtin.git_commits, { desc = "Git commits" })
-		vim.keymap.set("n", "<leader>gs", builtin.git_status, { desc = "Git status" })
+		vim.keymap.set("n", "<leader>gS", builtin.git_status, { desc = "Telescope git status" })
 		vim.keymap.set("n", "<leader>gb", builtin.git_branches, { desc = "Git branches" })
 
 		-- ==================== LSP ====================

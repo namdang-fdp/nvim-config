@@ -8,7 +8,7 @@ return {
 	cmd = { "ConformInfo" },
 	keys = {
 		{
-			"<leader>f",
+			"<leader>F",
 			function()
 				require("conform").format({ async = true, lsp_fallback = true, timeout_ms = 3000 })
 			end,
@@ -33,6 +33,9 @@ return {
 			go = { "goimports" },
 			java = { "google-java-format" },
 			lua = { "stylua" },
+			-- C/C++
+			cpp = { "clang_format" },
+			c = { "clang_format" },
 		},
 		formatters = {
 			["google-java-format"] = {

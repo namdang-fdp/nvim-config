@@ -7,7 +7,7 @@ end
 
 -- ==================== FONTS ====================
 -- Option 1: JetBrains Mono (recommended - đẹp, rõ ràng)
-vim.o.guifont = "JetBrainsMono Nerd Font:h16"
+-- vim.o.guifont = "JetBrainsMono Nerd Font:h16"
 
 -- Option 2: Fira Code (có ligatures đẹp: -> => != >=)
 -- vim.o.guifont = "FiraCode Nerd Font:h16"
@@ -22,7 +22,7 @@ vim.o.guifont = "JetBrainsMono Nerd Font:h16"
 -- vim.o.guifont = "VictorMono Nerd Font:h16"
 
 -- Option 6: Maple Mono (font cũ của anh)
--- vim.o.guifont = "Maple Mono NF:h16"
+vim.o.guifont = "Maple Mono NF:h16"
 
 -- ==================== SPACING ====================
 -- Tăng khoảng cách giữa các dòng (line spacing)

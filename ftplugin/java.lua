@@ -85,7 +85,7 @@ local config = {
 		"-javaagent:" .. lombok_path,
 
 		-- ✅ CRITICAL: disable Eclipse APT to prevent AbstractProcessor crash
-		"-Dorg.eclipse.jdt.apt.aptEnabled=false",
+		"-Dorg.eclipse.jdt.apt.aptEnabled=true",
 
 		"-Xms1g",
 		"-Xmx2g",
@@ -104,7 +104,7 @@ local config = {
 	settings = {
 		java = {
 			-- ✅ keep APT off in settings too
-			apt = { aptEnabled = false },
+			apt = { aptEnabled = true },
 
 			eclipse = { downloadSources = true },
 			maven = { downloadSources = true, updateSnapshots = true },

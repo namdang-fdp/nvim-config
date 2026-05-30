@@ -3,11 +3,11 @@
 -- ============================================
 return {
 	-- ==================== COLORSCHEME ====================
-	-- Option 1: Catppuccin (hiện tại - pastel, mềm mại)
+	-- Catppuccin is kept installed for quick rollback; colorscheme.lua applies the active theme.
 	{
 		"catppuccin/nvim",
 		name = "catppuccin",
-		priority = 1000,
+		priority = 900,
 		config = function()
 			require("catppuccin").setup({
 				flavour = "mocha", -- latte, frappe, macchiato, mocha
@@ -26,7 +26,6 @@ return {
 					},
 				},
 			})
-			vim.cmd.colorscheme("catppuccin")
 		end,
 	},
 
@@ -87,7 +86,7 @@ return {
 		config = function()
 			require("lualine").setup({
 				options = {
-					theme = "catppuccin", -- Đổi theo colorscheme
+					theme = "tokyonight", -- Đổi theo colorscheme
 					component_separators = { left = "", right = "" },
 					section_separators = { left = "", right = "" },
 					globalstatus = true, -- Status line chung cho tất cả windows
@@ -178,9 +177,10 @@ return {
 		event = "VeryLazy",
 		config = function()
 			require("which-key").setup({
-				window = {
+				preset = "classic",
+				win = {
 					border = "rounded",
-					position = "bottom",
+					padding = { 1, 2 },
 				},
 			})
 		end,
