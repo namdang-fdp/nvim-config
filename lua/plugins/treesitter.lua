@@ -17,6 +17,7 @@ return {
 				-- Go
 				"go",
 				"gomod",
+				"gowork",
 				"gosum",
 				-- Java
 				"java",

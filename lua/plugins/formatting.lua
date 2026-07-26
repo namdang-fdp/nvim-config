@@ -29,8 +29,8 @@ return {
 			json = { "prettier" },
 			yaml = { "prettier" },
 			markdown = { "prettier" },
-			-- Go formatting - use goimports only (more stable)
-			go = { "goimports" },
+			-- Go formatting - imports first, then stricter gofumpt formatting.
+			go = { "goimports", "gofumpt" },
 			java = { "google-java-format" },
 			lua = { "stylua" },
 			-- C/C++
@@ -42,12 +42,7 @@ return {
 				prepend_args = { "--aosp" },
 			},
 		},
-		-- Disable format on save for Go (go.nvim handles it)
-		format_on_save = function(bufnr)
-			-- Disable for Go files (go.nvim handles formatting)
-			if vim.bo[bufnr].filetype == "go" then
-				return
-			end
+		format_on_save = function()
 			return {
 				timeout_ms = 3000,
 				lsp_fallback = true,

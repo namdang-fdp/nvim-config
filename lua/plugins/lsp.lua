@@ -138,8 +138,10 @@ return {
 			ensure_installed = {
 				-- Go
 				"gopls",
+				"delve",
 				"goimports",
 				"gofumpt",
+				"staticcheck",
 				"golangci-lint",
 				-- Lua
 				"lua-language-server",
