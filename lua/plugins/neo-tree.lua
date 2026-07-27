@@ -12,11 +12,12 @@ return {
 	},
 	cmd = "Neotree",
 	keys = {
-		{ "<leader>e", "<cmd>Neotree toggle reveal left<cr>", desc = "Toggle file tree" },
-		{ "<leader>f", "<cmd>Neotree reveal left<cr>", desc = "Reveal current file" },
+		{ "<leader>ee", "<cmd>Neotree toggle reveal left<cr>", desc = "Toggle file tree" },
+		{ "<leader>er", "<cmd>Neotree reveal left<cr>", desc = "Reveal current file" },
 		{ "<leader>gs", "<cmd>Neotree float git_status<cr>", desc = "Git status tree" },
 	},
 	opts = {
+		popup_border_style = "rounded",
 		close_if_last_window = true,
 		window = {
 			width = 32,
@@ -27,7 +28,7 @@ return {
 			},
 			filtered_items = {
 				hide_dotfiles = false,
-				hide_gitignored = false,
+				hide_gitignored = true,
 			},
 			use_libuv_file_watcher = true,
 		},

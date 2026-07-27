@@ -1,39 +1,44 @@
--- ============================================
--- BUFFERLINE - Beautiful buffer/tab line
--- ============================================
 return {
 	"akinsho/bufferline.nvim",
-	dependencies = "nvim-tree/nvim-web-devicons",
 	event = "VeryLazy",
+	dependencies = "nvim-tree/nvim-web-devicons",
 	keys = {
-		{ "<leader>bp", "<Cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },
-		{ "<leader>bP", "<Cmd>BufferLineGroupClose ungrouped<CR>", desc = "Delete non-pinned buffers" },
-		{ "<leader>br", "<Cmd>BufferLineCloseRight<CR>", desc = "Delete buffers to the right" },
-		{ "<leader>bl", "<Cmd>BufferLineCloseLeft<CR>", desc = "Delete buffers to the left" },
-		{ "<S-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
-		{ "<S-l>", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer" },
-		{ "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
+		{ "<leader>bt", "<cmd>BufferLineTogglePin<cr>", desc = "Toggle buffer pin" },
+		{ "<leader>bD", "<cmd>BufferLineGroupClose ungrouped<cr>", desc = "Delete unpinned buffers" },
+		{ "<leader>br", "<cmd>BufferLineCloseRight<cr>", desc = "Delete buffers right" },
+		{ "<leader>bL", "<cmd>BufferLineCloseLeft<cr>", desc = "Delete buffers left" },
+		{ "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Previous buffer" },
 		{ "]b", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer" },
-		{ "[B", "<cmd>BufferLineMovePrev<cr>", desc = "Move buffer prev" },
-		{ "]B", "<cmd>BufferLineMoveNext<cr>", desc = "Move buffer next" },
+		{ "[B", "<cmd>BufferLineMovePrev<cr>", desc = "Move buffer left" },
+		{ "]B", "<cmd>BufferLineMoveNext<cr>", desc = "Move buffer right" },
 	},
 	opts = {
 		options = {
-			close_command = "bdelete! %d",
-			right_mouse_command = "bdelete! %d",
-			diagnostics = "nvim_lsp",
+			mode = "buffers",
+			separator_style = "thin",
 			always_show_bufferline = true,
-			diagnostics_indicator = function(count, level, diagnostics_dict, context)
-				local icon = level:match("error") and " " or " "
-				return " " .. icon .. count
+			show_buffer_close_icons = false,
+			show_close_icon = false,
+			modified_icon = "●",
+			color_icons = true,
+			diagnostics = "nvim_lsp",
+			diagnostics_indicator = function(count, level)
+				local icon = level:match("error") and "󰅚" or "󰀪"
+				return (" %s %d"):format(icon, count)
 			end,
 			offsets = {
 				{
 					filetype = "neo-tree",
-					text = "Neo-tree",
+					text = " Explorer",
 					highlight = "Directory",
 					text_align = "left",
+					separator = true,
 				},
+			},
+			hover = {
+				enabled = true,
+				delay = 200,
+				reveal = { "close" },
 			},
 		},
 	},

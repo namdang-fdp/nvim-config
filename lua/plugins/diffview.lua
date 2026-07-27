@@ -5,8 +5,8 @@ return {
 	keys = {
 		{ "<leader>gv", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
 		{ "<leader>gV", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
-		{ "<leader>gh", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
-		{ "<leader>gH", "<cmd>DiffviewFileHistory<cr>", desc = "Branch history" },
+		{ "<leader>gfh", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
+		{ "<leader>gfH", "<cmd>DiffviewFileHistory<cr>", desc = "Branch history" },
 	},
 	opts = {
 		enhanced_diff_hl = true,

@@ -1,18 +1,31 @@
 return {
 	"stevearc/dressing.nvim",
 	event = "VeryLazy",
-	opts = {
-		input = {
-			enabled = true,
-			default_prompt = "➤ ",
-			win_options = {
-				winblend = 10,
+	dependencies = { "nvim-telescope/telescope.nvim" },
+	opts = function()
+		return {
+			input = {
+				enabled = true,
+				default_prompt = "➤ ",
+				border = "rounded",
+				win_options = { winblend = 0 },
 			},
-		},
-		select = {
-			enabled = true,
-			backend = { "telescope", "fzf_lua", "fzf", "builtin", "nui" },
-			telescope = require("telescope.themes").get_dropdown(),
-		},
-	},
+			select = {
+				enabled = true,
+				backend = { "telescope", "builtin" },
+				telescope = require("telescope.themes").get_dropdown({
+					borderchars = {
+						"─",
+						"│",
+						"─",
+						"│",
+						"╭",
+						"╮",
+						"╯",
+						"╰",
+					},
+				}),
+			},
+		}
+	end,
 }

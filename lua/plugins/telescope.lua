@@ -1,32 +1,37 @@
--- ============================================
--- TELESCOPE - ENHANCED FOR BETTER DX
--- ============================================
 return {
 	"nvim-telescope/telescope.nvim",
-	event = "VimEnter",
 	branch = "0.1.x",
+	event = "VimEnter",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		{
 			"nvim-telescope/telescope-fzf-native.nvim",
 			build = "make",
+			cond = function()
+				return vim.fn.executable("make") == 1
+			end,
 		},
 	},
 	config = function()
 		local telescope = require("telescope")
 		local actions = require("telescope.actions")
+		local builtin = require("telescope.builtin")
 
 		telescope.setup({
 			defaults = {
-				-- File ignore patterns
-				file_ignore_patterns = {
-					"node_modules",
-					".git/",
-					"target/classes",
-					"build/classes",
+				border = true,
+				borderchars = {
+					prompt = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+					results = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+					preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 				},
-
-				-- Better layout
+				file_ignore_patterns = {
+					"node_modules/",
+					".git/",
+					"target/classes/",
+					"build/classes/",
+				},
+				layout_strategy = "horizontal",
 				layout_config = {
 					horizontal = {
 						preview_width = 0.55,
@@ -36,31 +41,22 @@ return {
 					height = 0.80,
 				},
 				sorting_strategy = "ascending",
-				preview = {
-					treesitter = false,
-				},
-
-				-- Better prompts
-				prompt_prefix = "🔍 ",
-				selection_caret = "➜ ",
+				prompt_prefix = "  ",
+				selection_caret = " ",
 				path_display = { "truncate" },
-
-				-- Mappings
 				mappings = {
 					i = {
 						["<C-j>"] = actions.move_selection_next,
 						["<C-k>"] = actions.move_selection_previous,
 						["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
-						["<C-d>"] = actions.delete_buffer, -- Delete buffer in buffer picker
-						["<C-u>"] = false, -- Disable default clear prompt
+						["<C-d>"] = actions.delete_buffer,
+						["<C-u>"] = false,
 					},
 					n = {
 						["q"] = actions.close,
 						["<C-d>"] = actions.delete_buffer,
 					},
 				},
-
-				-- Ripgrep arguments
 				vimgrep_arguments = {
 					"rg",
 					"--color=never",
@@ -75,115 +71,63 @@ return {
 					"--glob=!build/classes/",
 				},
 			},
-
 			pickers = {
 				find_files = {
 					hidden = true,
-					follow = true,
-					no_ignore = false,
-					no_ignore_parent = false,
 				},
-
-				live_grep = {
-					additional_args = function()
-						return {
-							"--hidden",
-							"--glob=!.git/",
-							"--glob=!target/classes/",
-							"--glob=!build/classes/",
-						}
-					end,
-				},
-
 				buffers = {
 					sort_lastused = true,
 					sort_mru = true,
 					ignore_current_buffer = true,
-					mappings = {
-						i = {
-							["<c-d>"] = actions.delete_buffer,
-						},
-						n = {
-							["<c-d>"] = actions.delete_buffer,
-							["dd"] = actions.delete_buffer,
-						},
-					},
 				},
-
 				oldfiles = {
-					only_cwd = true, -- Chỉ show recent files trong project hiện tại
+					only_cwd = true,
 				},
 			},
 		})
 
-		-- Load extensions
-		pcall(telescope.load_extension, "fzf")
+		if vim.fn.executable("make") == 1 then
+			local loaded, load_error = pcall(telescope.load_extension, "fzf")
+			if not loaded then
+				vim.notify("Telescope FZF is unavailable: " .. tostring(load_error), vim.log.levels.WARN)
+			end
+		else
+			vim.notify_once("make is unavailable; Telescope is using its built-in sorter", vim.log.levels.INFO)
+		end
 
-		local builtin = require("telescope.builtin")
+		local function needs(executable, callback)
+			return function()
+				if vim.fn.executable(executable) ~= 1 then
+					vim.notify(executable .. " is required for this search", vim.log.levels.WARN, { title = "Telescope" })
+					return
+				end
+				callback()
+			end
+		end
 
-		-- ==================== FILE NAVIGATION ====================
+		local maps = {
+			{ "<leader>ff", builtin.find_files, "Find files" },
+			{ "<leader>fa", function() builtin.find_files({ hidden = true, no_ignore = true }) end, "Find all files" },
+			{ "<leader>fr", builtin.oldfiles, "Recent files" },
+			{ "<leader>fg", needs("rg", builtin.live_grep), "Grep project" },
+			{ "<leader>fw", needs("rg", builtin.grep_string), "Grep word" },
+			{ "<leader>fb", builtin.buffers, "Find buffers" },
+			{ "<leader>fs", builtin.lsp_document_symbols, "Document symbols" },
+			{ "<leader>fS", builtin.lsp_workspace_symbols, "Workspace symbols" },
+			{ "<leader>fh", builtin.help_tags, "Help tags" },
+			{ "<leader>fk", builtin.keymaps, "Keymaps" },
+			{ "<leader>fc", builtin.commands, "Commands" },
+			{ "<leader>f/", builtin.current_buffer_fuzzy_find, "Search current buffer" },
+			{ "<leader>f.", builtin.resume, "Resume search" },
+			{ "<leader>bb", builtin.buffers, "Buffer picker" },
+			{ "<leader>gB", builtin.git_branches, "Git branches" },
+			{ "<leader>gc", builtin.git_commits, "Git commits" },
+			{ "<leader>gS", builtin.git_status, "Git status" },
+			{ "<leader>xD", builtin.diagnostics, "Search diagnostics" },
+		}
 
-		-- Find files
-		vim.keymap.set("n", "<leader>ff", function()
-			builtin.find_files({
-				hidden = true,
-				no_ignore = false,
-			})
-		end, { desc = "Find files" })
-
-		-- Find ALL files (including gitignored)
-		vim.keymap.set("n", "<leader>fF", function()
-			builtin.find_files({
-				hidden = true,
-				no_ignore = true,
-			})
-		end, { desc = "Find ALL files (no ignore)" })
-
-		-- Recent files
-		vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
-
-		-- ==================== SEARCH ====================
-
-		-- Live grep
-		vim.keymap.set("n", "<leader>fg", function()
-			builtin.live_grep({
-				additional_args = { "--hidden" },
-			})
-		end, { desc = "Live grep" })
-
-		-- Grep word under cursor
-		vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Find word under cursor" })
-
-		-- ==================== BUFFERS ====================
-
-		-- Buffer picker (enhanced)
-		vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find buffers" })
-		vim.keymap.set("n", "<leader>bb", builtin.buffers, { desc = "Buffer picker" })
-
-		-- ==================== GIT ====================
-
-		vim.keymap.set("n", "<leader>gc", builtin.git_commits, { desc = "Git commits" })
-		vim.keymap.set("n", "<leader>gS", builtin.git_status, { desc = "Telescope git status" })
-		vim.keymap.set("n", "<leader>gb", builtin.git_branches, { desc = "Git branches" })
-
-		-- ==================== LSP ====================
-
-		vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Document symbols" })
-		vim.keymap.set("n", "<leader>fS", builtin.lsp_workspace_symbols, { desc = "Workspace symbols" })
-		vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Diagnostics" })
-
-		-- ==================== HELP ====================
-
-		vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
-		vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Keymaps" })
-		vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Commands" })
-
-		-- ==================== EXTRAS ====================
-
-		-- Find in current buffer
-		vim.keymap.set("n", "<leader>/", builtin.current_buffer_fuzzy_find, { desc = "Search in current buffer" })
-
-		-- Resume last picker
-		vim.keymap.set("n", "<leader>f.", builtin.resume, { desc = "Resume last picker" })
+		for _, map in ipairs(maps) do
+			vim.keymap.set("n", map[1], map[2], { desc = map[3], silent = true })
+		end
 	end,
 }
