@@ -35,8 +35,8 @@ end, { desc = "Toggle diagnostic virtual text" })
 
 -- Oil remains the fast file-operation path; Neo-tree owns the sidebar.
 map("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
-map("n", "<leader>eo", "<cmd>Oil --float<cr>", { desc = "Oil file operations" })
-map("n", "<leader>eO", "<cmd>Oil<cr>", { desc = "Oil full window" })
+map("n", "<leader>o", "<cmd>Oil<cr>", { desc = "Open file directory in Oil" })
+map("n", "<leader>O", "<cmd>Oil --float<cr>", { desc = "Open Oil floating" })
 
 -- Project navigation
 map("n", "<leader>pp", "<cmd>FindProjects<cr>", { desc = "Find projects" })

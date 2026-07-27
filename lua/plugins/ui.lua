@@ -5,7 +5,22 @@ return {
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		opts = {
 			options = {
-				theme = "kanagawa",
+				theme = {
+					normal = {
+						a = { fg = "#17181c", bg = "#d4779b", gui = "bold" },
+						b = { fg = "#d7dae0", bg = "#292a30" },
+						c = { fg = "#aeb2bc", bg = "#1e1f24" },
+					},
+					insert = { a = { fg = "#17181c", bg = "#8fae8b", gui = "bold" } },
+					visual = { a = { fg = "#17181c", bg = "#b7a0d8", gui = "bold" } },
+					replace = { a = { fg = "#17181c", bg = "#d36c6c", gui = "bold" } },
+					command = { a = { fg = "#17181c", bg = "#87a9b8", gui = "bold" } },
+					inactive = {
+						a = { fg = "#747b8a", bg = "#191a1e" },
+						b = { fg = "#747b8a", bg = "#191a1e" },
+						c = { fg = "#747b8a", bg = "#191a1e" },
+					},
+				},
 				component_separators = { left = "│", right = "│" },
 				section_separators = { left = "", right = "" },
 				globalstatus = true,
@@ -66,7 +81,6 @@ return {
 				{ "<leader>b", group = "Buffers" },
 				{ "<leader>c", group = "Code" },
 				{ "<leader>d", group = "Debug" },
-				{ "<leader>e", group = "Explorer" },
 				{ "<leader>f", group = "Find" },
 				{ "<leader>g", group = "Git" },
 				{ "<leader>l", group = "Language" },
@@ -84,7 +98,7 @@ return {
 		"rcarriga/nvim-notify",
 		event = "VeryLazy",
 		opts = {
-			background_colour = "#211f1c",
+			background_colour = "#222329",
 			fps = 30,
 			render = "compact",
 			stages = "fade_in_slide_out",
@@ -157,7 +171,7 @@ return {
 				"  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
 				"  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
 				"                                                      ",
-				"            graphite · amber · focused               ",
+				"          graphite · rose · lavender · focused        ",
 			}
 			dashboard.section.buttons.val = {
 				dashboard.button("f", "  Find files", "<cmd>Telescope find_files<cr>"),
@@ -167,7 +181,7 @@ return {
 				dashboard.button("c", "  Neovim config", "<cmd>edit $MYVIMRC<cr>"),
 				dashboard.button("q", "  Quit", "<cmd>quitall<cr>"),
 			}
-			dashboard.section.footer.val = "Warm contrast for long coding sessions"
+			dashboard.section.footer.val = "Cool-neutral contrast for long coding sessions"
 			dashboard.opts.opts.noautocmd = true
 			alpha.setup(dashboard.opts)
 		end,

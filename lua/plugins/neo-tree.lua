@@ -12,8 +12,8 @@ return {
 	},
 	cmd = "Neotree",
 	keys = {
-		{ "<leader>ee", "<cmd>Neotree toggle reveal left<cr>", desc = "Toggle file tree" },
-		{ "<leader>er", "<cmd>Neotree reveal left<cr>", desc = "Reveal current file" },
+		{ "<leader>e", "<cmd>Neotree toggle filesystem left<cr>", desc = "Toggle file tree" },
+		{ "<leader>E", "<cmd>Neotree reveal left<cr>", desc = "Reveal current file" },
 		{ "<leader>gs", "<cmd>Neotree float git_status<cr>", desc = "Git status tree" },
 	},
 	opts = {

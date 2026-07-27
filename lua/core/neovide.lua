@@ -10,8 +10,8 @@ vim.g.neovide_padding_bottom = 10
 vim.g.neovide_padding_left = 15
 vim.g.neovide_padding_right = 15
 
--- Moderate transparency keeps the blue wallpaper visible without sacrificing
--- contrast against the warm graphite Kanagawa palette.
+-- Moderate transparency keeps the wallpaper visible behind the cool-neutral
+-- editor palette without sacrificing contrast.
 vim.g.neovide_opacity = 0.94
 vim.g.neovide_window_blurred = true
 vim.g.neovide_floating_blur_amount_x = 1.5
