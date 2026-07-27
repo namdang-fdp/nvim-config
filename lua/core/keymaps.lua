@@ -1,76 +1,44 @@
--- ============================================
--- KEYBOARD MAPPINGS
--- ============================================
+local map = vim.keymap.set
 
--- Clear search highlight
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+map("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })
 
--- Better window navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h")
-vim.keymap.set("n", "<C-j>", "<C-w>j")
-vim.keymap.set("n", "<C-k>", "<C-w>k")
-vim.keymap.set("n", "<C-l>", "<C-w>l")
+-- Window navigation stays compatible with a future vim-tmux-navigator layer.
+map("n", "<C-h>", "<C-w>h", { desc = "Window left" })
+map("n", "<C-j>", "<C-w>j", { desc = "Window down" })
+map("n", "<C-k>", "<C-w>k", { desc = "Window up" })
+map("n", "<C-l>", "<C-w>l", { desc = "Window right" })
 
--- Save file
-vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
+map("n", "<leader>w", "<cmd>write<cr>", { desc = "Save file" })
+map("n", "<leader>q", "<cmd>quit<cr>", { desc = "Quit window" })
 
--- Quit
-vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
+map("v", "<", "<gv", { desc = "Indent left" })
+map("v", ">", ">gv", { desc = "Indent right" })
+map("n", "<A-j>", ":move .+1<cr>==", { desc = "Move line down" })
+map("n", "<A-k>", ":move .-2<cr>==", { desc = "Move line up" })
+map("v", "<A-j>", ":move '>+1<cr>gv=gv", { desc = "Move selection down" })
+map("v", "<A-k>", ":move '<-2<cr>gv=gv", { desc = "Move selection up" })
 
--- Better indenting
-vim.keymap.set("v", "<", "<gv")
-vim.keymap.set("v", ">", ">gv")
+-- Buffers
+map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
+map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Previous buffer" })
+map("n", "<leader>bn", "<cmd>bnext<cr>", { desc = "Next buffer" })
+map("n", "<leader>bp", "<cmd>bprevious<cr>", { desc = "Previous buffer" })
+map("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete buffer" })
+map("n", "<leader>bo", "<cmd>%bd|edit#|bdelete#<cr>", { desc = "Delete other buffers" })
+map("n", "<leader>bl", "<cmd>edit #<cr>", { desc = "Last buffer" })
 
--- Move lines
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>==")
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>==")
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv")
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv")
+-- Diagnostics use Neovim 0.12's native [d and ]d mappings.
+map("n", "<leader>xd", vim.diagnostic.open_float, { desc = "Line diagnostics" })
+map("n", "<leader>ud", function()
+	require("core.diagnostic-config").toggle_virtual_text()
+end, { desc = "Toggle diagnostic virtual text" })
 
--- Buffer navigation
-vim.keymap.set("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
-vim.keymap.set("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
-vim.keymap.set("n", "<leader>bd", "<cmd>bdelete<CR>", { desc = "Delete buffer" })
-vim.keymap.set("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Delete other buffers" })
-vim.keymap.set("n", "<leader>bb", "<cmd>Telescope buffers<CR>", { desc = "Buffer picker" })
+-- Oil remains the fast file-operation path; Neo-tree owns the sidebar.
+map("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
+map("n", "<leader>eo", "<cmd>Oil --float<cr>", { desc = "Oil file operations" })
+map("n", "<leader>eO", "<cmd>Oil<cr>", { desc = "Oil full window" })
 
--- Terminal mappings
-vim.keymap.set("n", "<leader>tt", "<cmd>ToggleTerm<CR>", { desc = "Toggle terminal" })
-vim.keymap.set("n", "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", { desc = "Float terminal" })
-vim.keymap.set("n", "<leader>th", "<cmd>ToggleTerm direction=horizontal<CR>", { desc = "Horizontal terminal" })
-vim.keymap.set("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical size=80<CR>", { desc = "Vertical terminal" })
-vim.keymap.set("t", "<C-x>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
-
--- Diagnostic navigation
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
-vim.keymap.set("n", "]e", function()
-	vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
-end, { desc = "Next error" })
-vim.keymap.set("n", "[e", function()
-	vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
-end, { desc = "Previous error" })
-vim.keymap.set("n", "]w", function()
-	vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.WARN })
-end, { desc = "Next warning" })
-vim.keymap.set("n", "[w", function()
-	vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.WARN })
-end, { desc = "Previous warning" })
-vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
-vim.keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<CR>", { desc = "List all diagnostics" })
-
--- Quick buffer close without losing window
-vim.keymap.set("n", "<leader>c", "<cmd>bp|bd #<CR>", { desc = "Close buffer keep window" })
-
--- Switch to last buffer
-vim.keymap.set("n", "<leader><leader>", "<cmd>e #<CR>", { desc = "Switch to last buffer" })
-
--- ============================================
--- OIL.NVIM FILE NAVIGATION
--- ============================================
--- Open parent directory (Oil's signature move)
-vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
-
--- File operation commands
-vim.keymap.set("n", "<leader>o", "<cmd>Oil --float<cr>", { desc = "Oil file operations" })
-vim.keymap.set("n", "<leader>O", "<cmd>Oil<cr>", { desc = "Oil full window" })
+-- Project navigation
+map("n", "<leader>pp", "<cmd>FindProjects<cr>", { desc = "Find projects" })
+map("n", "<leader>ps", "<cmd>ProjectSessionSave<cr>", { desc = "Save project session" })
+map("n", "<leader>pl", "<cmd>ProjectSessionLoad<cr>", { desc = "Load project session" })

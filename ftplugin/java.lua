@@ -1,26 +1,40 @@
--- ============================================
--- JAVA CONFIGURATION - JDTLS + LOMBOK (STABLE MODE)
--- Fix: Crash during "Publish Diagnostics" with APT enabled
--- Strategy: Keep Lombok via -javaagent, disable Eclipse APT to prevent crash
--- ============================================
-
 local ok, jdtls = pcall(require, "jdtls")
 if not ok then
-	vim.notify("nvim-jdtls not found!", vim.log.levels.ERROR)
+	vim.notify("nvim-jdtls is unavailable", vim.log.levels.ERROR, { title = "Java" })
 	return
 end
 
--- Paths
-local lombok_path = vim.fn.expand("~/.local/share/nvim/lombok/lombok.jar")
-if vim.fn.filereadable(lombok_path) == 0 then
-	vim.notify("Lombok not found at " .. lombok_path, vim.log.levels.WARN)
+local bufnr = vim.api.nvim_get_current_buf()
+local root_dir = vim.fs.root(bufnr, {
+	"mvnw",
+	"gradlew",
+	"pom.xml",
+	"build.gradle",
+	"build.gradle.kts",
+	"settings.gradle",
+	"settings.gradle.kts",
+	".git",
+})
+
+if not root_dir then
+	vim.notify("No Maven, Gradle, or Git project root found", vim.log.levels.WARN, { title = "Java" })
 	return
 end
 
-local mason_path = vim.fn.stdpath("data") .. "/mason/packages/jdtls"
-local launcher_jar = vim.fn.glob(mason_path .. "/plugins/org.eclipse.equinox.launcher_*.jar")
-if launcher_jar == "" then
-	vim.notify("JDTLS launcher not found in mason path", vim.log.levels.ERROR)
+local java_bin = vim.fn.exepath("java")
+if java_bin == "" then
+	vim.notify(
+		"Java is not on PATH; install a system Java 21 runtime to start JDTLS",
+		vim.log.levels.ERROR,
+		{ title = "Java" }
+	)
+	return
+end
+
+local mason_package = vim.fn.stdpath("data") .. "/mason/packages/jdtls"
+local launcher_jar = vim.fn.glob(mason_package .. "/plugins/org.eclipse.equinox.launcher_*.jar", false, true)[1]
+if not launcher_jar then
+	vim.notify("JDTLS is not installed; run :DevToolsSync", vim.log.levels.ERROR, { title = "Java" })
 	return
 end
 
@@ -31,106 +45,92 @@ elseif vim.fn.has("win32") == 1 then
 	os_config = "config_win"
 end
 
--- Root + Workspace
-local root_dir = require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" })
-if not root_dir then
-	vim.notify("No Maven/Gradle project found for JDTLS", vim.log.levels.WARN)
-	return
+local workspace_id = vim.fn.fnamemodify(root_dir, ":t") .. "-" .. vim.fn.sha256(root_dir):sub(1, 10)
+local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/" .. workspace_id
+
+local lombok_jar = vim.fn.expand("~/.local/share/nvim/lombok/lombok.jar")
+local has_lombok = vim.fn.filereadable(lombok_jar) == 1
+if not has_lombok then
+	vim.notify(
+		"Lombok agent is not readable at " .. lombok_jar .. "; starting JDTLS without Lombok support",
+		vim.log.levels.WARN,
+		{ title = "Java" }
+	)
 end
 
-local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
-local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_name
+local cmd = {
+	java_bin,
+	"-Declipse.application=org.eclipse.jdt.ls.core.id1",
+	"-Dosgi.bundles.defaultStartLevel=4",
+	"-Declipse.product=org.eclipse.jdt.ls.core.product",
+	"-Dlog.protocol=true",
+	"-Dlog.level=WARN",
+	"-Xms512m",
+	"-Xmx2g",
+	"--add-modules=ALL-SYSTEM",
+	"--add-opens",
+	"java.base/java.util=ALL-UNNAMED",
+	"--add-opens",
+	"java.base/java.lang=ALL-UNNAMED",
+}
 
--- Capabilities (nvim-cmp)
+if has_lombok then
+	table.insert(cmd, "-javaagent:" .. lombok_jar)
+end
+
+vim.list_extend(cmd, {
+	"-jar",
+	launcher_jar,
+	"-configuration",
+	mason_package .. "/" .. os_config,
+	"-data",
+	workspace_dir,
+})
+
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 local cmp_ok, cmp_lsp = pcall(require, "cmp_nvim_lsp")
 if cmp_ok then
 	capabilities = cmp_lsp.default_capabilities(capabilities)
 end
-capabilities.textDocument.completion.completionItem.snippetSupport = true
 
--- Diagnostics baseline
-vim.diagnostic.config({
-	virtual_text = true,
-	signs = true,
-	underline = true,
-	update_in_insert = false,
-	severity_sort = true,
-})
-
--- Force JDK java (SDKMAN current)
-local java_bin = vim.fn.expand("~/.sdkman/candidates/java/current/bin/java")
-if vim.fn.executable(java_bin) == 0 then
-	java_bin = "java"
+local function map(keys, action, desc)
+	vim.keymap.set("n", keys, action, {
+		buffer = bufnr,
+		silent = true,
+		desc = "Java: " .. desc,
+	})
 end
 
 local config = {
-	cmd = {
-		java_bin,
-
-		"-Declipse.application=org.eclipse.jdt.ls.core.id1",
-		"-Dosgi.bundles.defaultStartLevel=4",
-		"-Declipse.product=org.eclipse.jdt.ls.core.product",
-
-		"-Dlog.protocol=true",
-		"-Dlog.level=INFO",
-
-		"--add-modules=ALL-SYSTEM",
-		"--add-opens",
-		"java.base/java.util=ALL-UNNAMED",
-		"--add-opens",
-		"java.base/java.lang=ALL-UNNAMED",
-
-		-- Lombok support (agent only)
-		"-javaagent:" .. lombok_path,
-
-		-- ✅ CRITICAL: disable Eclipse APT to prevent AbstractProcessor crash
-		"-Dorg.eclipse.jdt.apt.aptEnabled=true",
-
-		"-Xms1g",
-		"-Xmx2g",
-
-		"-jar",
-		launcher_jar,
-		"-configuration",
-		mason_path .. "/" .. os_config,
-		"-data",
-		workspace_dir,
-	},
-
+	cmd = cmd,
 	root_dir = root_dir,
 	capabilities = capabilities,
-
 	settings = {
 		java = {
-			-- ✅ keep APT off in settings too
-			apt = { aptEnabled = true },
-
+			-- Do not force Eclipse APT globally. Maven/Gradle project metadata owns
+			-- annotation-processor configuration; Lombok support is an optional agent.
 			eclipse = { downloadSources = true },
-			maven = { downloadSources = true, updateSnapshots = true },
+			maven = { downloadSources = true },
 			configuration = { updateBuildConfiguration = "interactive" },
 			autobuild = { enabled = true },
-
 			errors = { incompleteClasspath = { severity = "warning" } },
-
 			completion = {
-				enabled = true,
 				favoriteStaticMembers = {
 					"org.junit.jupiter.api.Assertions.*",
 					"org.mockito.Mockito.*",
 				},
 			},
-
 			sources = {
-				organizeImports = { starThreshold = 9999, staticStarThreshold = 9999 },
+				organizeImports = {
+					starThreshold = 9999,
+					staticStarThreshold = 9999,
+				},
 			},
-
 			implementationsCodeLens = { enabled = true },
 			referencesCodeLens = { enabled = true },
 			signatureHelp = { enabled = true },
 		},
 	},
-
 	init_options = {
 		bundles = {},
 		extendedClientCapabilities = {
@@ -140,43 +140,30 @@ local config = {
 			overrideMethodsPromptSupport = true,
 		},
 	},
-
-	on_attach = function(_, bufnr)
+	on_attach = function()
 		vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
-		local opts = { buffer = bufnr, silent = true }
-
-		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-		vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-		vim.keymap.set("n", "<leader>jo", jdtls.organize_imports, opts)
-		vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-		vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-		vim.keymap.set("n", "<leader>de", vim.diagnostic.open_float, opts)
+		map("<leader>ljo", jdtls.organize_imports, "Organize imports")
+		map("<leader>ljr", "<cmd>JdtlsRestart<cr>", "Restart JDTLS")
 	end,
 }
 
--- Restart helper (no deprecated API)
-vim.api.nvim_create_user_command("JdtlsRestart", function(opts)
-	if opts.args == "wipe" then
-		vim.notify("Wiping JDTLS workspace: " .. workspace_dir, vim.log.levels.WARN)
+vim.api.nvim_buf_create_user_command(bufnr, "JdtlsRestart", function(opts)
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "jdtls" })) do
+		client:stop(true)
+	end
+
+	if opts.bang then
 		vim.fn.delete(workspace_dir, "rf")
 	end
 
-	local clients = vim.lsp.get_clients({ name = "jdtls" })
-	for _, c in ipairs(clients) do
-		c.stop(true)
-	end
-
 	vim.defer_fn(function()
-		jdtls.start_or_attach(config)
-		vim.notify("JDTLS restarted (stable mode: APT OFF)", vim.log.levels.INFO)
+		if vim.api.nvim_buf_is_valid(bufnr) then
+			jdtls.start_or_attach(config)
+		end
 	end, 200)
 end, {
-	nargs = "?",
-	complete = function()
-		return { "wipe" }
-	end,
+	bang = true,
+	desc = "Restart JDTLS; add ! to clear this project's workspace",
 })
 
 jdtls.start_or_attach(config)

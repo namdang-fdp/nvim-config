@@ -1,190 +1,139 @@
--- ============================================
--- LSP CONFIGURATION
--- ============================================
+local devtools = require("core.devtools")
 
 return {
 	"neovim/nvim-lspconfig",
+	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
 		{ "williamboman/mason.nvim", config = true },
 		"williamboman/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		{ "j-hui/fidget.nvim", opts = {} },
+		"hrsh7th/cmp-nvim-lsp",
 	},
 	config = function()
-		-- LSP Attach keymaps
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
 			callback = function(event)
-				local map = function(keys, func, desc)
-					vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
+				local function map(keys, action, desc, mode)
+					vim.keymap.set(mode or "n", keys, action, {
+						buffer = event.buf,
+						desc = "LSP: " .. desc,
+					})
 				end
 
-				map("gd", require("telescope.builtin").lsp_definitions, "Goto Definition")
-				map("gr", require("telescope.builtin").lsp_references, "Goto References")
-				map("gI", require("telescope.builtin").lsp_implementations, "Goto Implementation")
-				map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type Definition")
-				map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document Symbols")
-				map("<leader>rn", vim.lsp.buf.rename, "Rename")
-				map("<leader>ca", vim.lsp.buf.code_action, "Code Action")
-				map("K", vim.lsp.buf.hover, "Hover Documentation")
-				map("gD", vim.lsp.buf.declaration, "Goto Declaration")
+				map("gd", function()
+					require("telescope.builtin").lsp_definitions()
+				end, "Go to definition")
+				map("gr", function()
+					require("telescope.builtin").lsp_references()
+				end, "Go to references")
+				map("gI", function()
+					require("telescope.builtin").lsp_implementations()
+				end, "Go to implementation")
+				map("gD", vim.lsp.buf.declaration, "Go to declaration")
+				map("K", function()
+					vim.lsp.buf.hover({ border = "rounded" })
+				end, "Hover documentation")
+				map("<leader>ct", function()
+					require("telescope.builtin").lsp_type_definitions()
+				end, "Type definition")
+				map("<leader>cs", function()
+					require("telescope.builtin").lsp_document_symbols()
+				end, "Document symbols")
+				map("<leader>cr", vim.lsp.buf.rename, "Rename symbol")
+				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "v" })
+
+				for _, client in ipairs(vim.lsp.get_clients({ bufnr = event.buf })) do
+					if client.name == "eslint" then
+						map("<leader>ce", function()
+							vim.lsp.buf.code_action({
+								apply = true,
+								context = { only = { "source.fixAll.eslint" } },
+							})
+						end, "ESLint fix all")
+						break
+					end
+				end
 			end,
 		})
 
-		-- Capabilities
-		local capabilities = vim.lsp.protocol.make_client_capabilities()
-		capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
-
-		-- Server configurations
+		local capabilities = require("cmp_nvim_lsp").default_capabilities()
 		local servers = {
-			-- Go
 			gopls = {
 				settings = {
 					gopls = {
 						analyses = { unusedparams = true },
 						staticcheck = true,
 						gofumpt = true,
+						usePlaceholders = true,
+						completeUnimported = true,
 					},
 				},
 			},
-			-- Lua
 			lua_ls = {
 				settings = {
 					Lua = {
+						runtime = { version = "LuaJIT" },
 						diagnostics = { globals = { "vim" } },
+						workspace = {
+							checkThirdParty = false,
+							library = vim.api.nvim_get_runtime_file("", true),
+						},
+						telemetry = { enable = false },
 					},
 				},
 			},
-			-- TypeScript/JavaScript
 			ts_ls = {},
 			eslint = {
-				on_attach = function(client, bufnr)
-					vim.api.nvim_create_autocmd("BufWritePre", {
-						buffer = bufnr,
-						command = "EslintFixAll",
-					})
-				end,
+				settings = {
+					workingDirectory = { mode = "auto" },
+					format = false,
+				},
 			},
-			-- HTML
 			html = {},
-			-- CSS
 			cssls = {},
-			-- Tailwind
 			tailwindcss = {},
-			-- JSON
 			jsonls = {},
-
 			pyright = {
 				settings = {
 					python = {
 						analysis = {
-							typeCheckingMode = "basic", -- "off", "basic", "strict"
+							typeCheckingMode = "basic",
 							autoSearchPaths = true,
 							useLibraryCodeForTypes = true,
-							diagnosticMode = "workspace",
-						},
-					},
-				},
-			},
-			omnisharp = {
-				cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
-				enable_roslyn_analyzers = true,
-				enable_import_completion = true,
-				organize_imports_on_format = true,
-			},
-			-- C/C++
-			clangd = {
-				cmd = {
-					"clangd",
-					"--background-index",
-					"--clang-tidy",
-					"--header-insertion=iwyu",
-					"--completion-style=detailed",
-					"--function-arg-placeholders",
-					"--fallback-style=llvm",
-					"--query-driver=/usr/sbin/g++,/usr/sbin/clang++,/usr/bin/g++,/usr/bin/clang++",
-				},
-				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
-				root_dir = function(fname)
-					return require("lspconfig.util").root_pattern(
-						"compile_commands.json",
-						"compile_flags.txt",
-						"CMakeLists.txt",
-						".clangd",
-						".git"
-					)(fname)
-				end,
-				init_options = {
-					usePlaceholders = true,
-					completeUnimported = true,
-					clangdFileStatus = true,
-				},
-				settings = {
-					clangd = {
-						InlayHints = {
-							Enabled = true,
-							ParameterNames = true,
-							DeducedTypes = true,
-							BlockEndComments = true,
+							diagnosticMode = "openFilesOnly",
 						},
 					},
 				},
 			},
 		}
 
-		-- Mason setup
-		require("mason").setup()
+		require("mason").setup({
+			ui = { border = "rounded" },
+		})
 		require("mason-tool-installer").setup({
-			ensure_installed = {
-				-- Go
-				"gopls",
-				"delve",
-				"goimports",
-				"gofumpt",
-				"staticcheck",
-				"golangci-lint",
-				-- Lua
-				"lua-language-server",
-				"stylua",
-				-- TypeScript/JavaScript
-				"typescript-language-server",
-				"eslint-lsp",
-				"prettier",
-				"eslint_d",
-				-- HTML/CSS
-				"html-lsp",
-				"css-lsp",
-				"tailwindcss-language-server",
-				-- JSON
-				"json-lsp",
-				-- Java
-				"jdtls",
-				"google-java-format",
-				-- Python
-				"pyright",
-				"ruff", -- ← Python linter/formatter
-				"black", -- ← Python formatter
-				-- C#
-				"csharpier", -- ← C# formatter (optional)
-				-- C/C++
-				"clangd",         -- LSP (system clangd ≥ 15 already installed, Mason as fallback)
-				"clang-format",   -- formatter
-				"codelldb",       -- debug adapter (lldb-based)
-				"cpptools",       -- Microsoft C/C++ debug tools (optional fallback)
-			},
+			ensure_installed = devtools.mason_tools,
+			run_on_start = false,
 			integrations = {
 				["mason-lspconfig"] = true,
 			},
 		})
 
-		for server_name, server in pairs(servers) do
-			server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-			vim.lsp.config(server_name, server)
+		for name, config in pairs(servers) do
+			config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+			vim.lsp.config(name, config)
 		end
 
 		require("mason-lspconfig").setup({
 			automatic_enable = {
-				exclude = { "jdtls" },
+				"gopls",
+				"lua_ls",
+				"ts_ls",
+				"eslint",
+				"html",
+				"cssls",
+				"tailwindcss",
+				"jsonls",
+				"pyright",
 			},
 		})
 	end,

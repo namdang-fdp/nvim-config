@@ -1,55 +1,58 @@
--- ============================================
--- GO DEVELOPMENT - CLEAN VERSION
--- ============================================
-
 return {
 	"ray-x/go.nvim",
 	dependencies = {
 		"ray-x/guihua.lua",
 		"neovim/nvim-lspconfig",
-		"nvim-treesitter/nvim-treesitter",
+		"mfussenegger/nvim-dap",
 	},
-	config = function()
-		require("go").setup({
-			-- Disable all notifications and prompts
-			notify = false,
-			auto_format = false,
-			auto_lint = false,
-
-			-- Format settings
-			gofmt = "gofumpt",
-			max_line_len = 120,
-			tag_transform = false,
-			tag_options = "json=omitempty",
-
-			-- LSP settings
-			lsp_cfg = false,
-			lsp_gofumpt = true,
-			lsp_on_attach = nil,
-			lsp_keymaps = false,
-			lsp_codelens = true,
-			lsp_diag_hdlr = true,
-			lsp_inlay_hints = {
-				enable = true,
-				only_current_line = false,
-				show_parameter_hints = true,
-				parameter_hints_prefix = " ",
-				other_hints_prefix = "=> ",
-			},
-
-			-- Test settings
-			test_runner = "go",
-			run_in_floaterm = false,
-
-			-- Disable verbose output
-			verbose = false,
-
-			-- Disable trouble integration
-			trouble = false,
-			luasnip = true,
-		})
-	end,
-	event = { "CmdlineEnter" },
-	ft = { "go", "gomod" },
-	build = ':lua require("go.install").update_all_sync()',
+	ft = { "go", "gomod", "gowork", "gosum" },
+	cmd = {
+		"GoAddTest",
+		"GoAddTag",
+		"GoAlt",
+		"GoBreakToggle",
+		"GoBuild",
+		"GoCoverage",
+		"GoCoverageClear",
+		"GoCoverageToggle",
+		"GoDebug",
+		"GoDoc",
+		"GoFillStruct",
+		"GoFillSwitch",
+		"GoGet",
+		"GoGenerate",
+		"GoIfErr",
+		"GoImpl",
+		"GoImport",
+		"GoLint",
+		"GoModInit",
+		"GoModTidy",
+		"GoRmTag",
+		"GoRun",
+		"GoTest",
+		"GoTestFile",
+		"GoTestFunc",
+		"GoTestPkg",
+		"GoVet",
+	},
+	opts = {
+		notify = false,
+		auto_format = false,
+		auto_lint = false,
+		gofmt = "gofumpt",
+		tag_options = "json=omitempty",
+		lsp_cfg = false,
+		lsp_keymaps = false,
+		lsp_diag_hdlr = false,
+		lsp_inlay_hints = {
+			enable = true,
+			only_current_line = false,
+			show_parameter_hints = true,
+		},
+		test_runner = "go",
+		run_in_floaterm = false,
+		trouble = false,
+		luasnip = true,
+		verbose = false,
+	},
 }

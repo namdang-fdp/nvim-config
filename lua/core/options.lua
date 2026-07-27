@@ -6,89 +6,6 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Tắt LSP progress notifications (không ảnh hưởng diagnostics)
-vim.lsp.handlers["$/progress"] = function() end
-
--- Tắt các notifications KHÔNG QUAN TRỌNG (giữ lại errors!)
-local notify = vim.notify
-vim.notify = function(msg, level, opts)
-	-- Chặn các messages không quan trọng
-	if msg:match("warning: multiple different client offset_encodings") then
-		return
-	end
-	if msg:match("method textDocument") then
-		return
-	end
-	if msg:match("method workspace") then
-		return
-	end
-	if msg:match("formatting") then
-		return
-	end
-	if msg:match("Press ENTER") then
-		return
-	end
-	if msg:match("null-ls") then
-		return
-	end
-	if msg:match("golangci_lint") then
-		return
-	end
-	if msg:match("max_line_len") then
-		return
-	end
-	if msg:match("Go development mode") then
-		return
-	end
-	-- QUAN TRỌNG: Vẫn hiện warnings và errors
-	if level == vim.log.levels.WARN or level == vim.log.levels.ERROR then
-		notify(msg, level, opts)
-	end
-end
-
--- ============================================
--- DIAGNOSTIC CONFIGURATION - HIỆN LỖI RÕ RÀNG
--- ============================================
-
--- Configure diagnostics display
-vim.diagnostic.config({
-	-- Hiện virtual text với lỗi
-	virtual_text = {
-		spacing = 4,
-		prefix = "●",
-		severity = {
-			min = vim.diagnostic.severity.HINT,
-		},
-	},
-	-- Hiện signs ở sidebar
-	signs = true,
-	-- Update diagnostics khi typing (để thấy lỗi ngay)
-	update_in_insert = false,
-	-- Underline text có lỗi
-	underline = true,
-	-- Severity sort
-	severity_sort = true,
-	-- Float window khi hover
-	float = {
-		border = "rounded",
-		source = "always",
-		header = "",
-		prefix = "",
-	},
-})
-
--- Define diagnostic signs
-local signs = {
-	{ name = "DiagnosticSignError", text = "" },
-	{ name = "DiagnosticSignWarn", text = "" },
-	{ name = "DiagnosticSignHint", text = "" },
-	{ name = "DiagnosticSignInfo", text = "" },
-}
-
-for _, sign in ipairs(signs) do
-	vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
-end
-
 -- ============================================
 -- BASIC SETTINGS
 -- ============================================
@@ -114,6 +31,18 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.opt.termguicolors = true
+vim.opt.background = "dark"
+vim.opt.pumblend = 0
+vim.opt.winblend = 0
+vim.opt.winborder = "rounded"
+vim.opt.fillchars = {
+	eob = " ",
+	fold = " ",
+	foldopen = "",
+	foldclose = "",
+	foldsep = " ",
+	diff = "╱",
+}
 
 -- Tab settings
 vim.opt.tabstop = 4

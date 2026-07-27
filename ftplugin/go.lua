@@ -1,78 +1,69 @@
--- ============================================
--- GO FILETYPE CONFIGURATION - CLEAN VERSION
--- ============================================
-
--- Check if go.nvim is available
-local go_ok, _ = pcall(require, "go")
-if not go_ok then
+local ok = pcall(require, "go")
+if not ok then
 	return
 end
 
--- Go-specific settings
 vim.opt_local.tabstop = 4
 vim.opt_local.shiftwidth = 4
 vim.opt_local.expandtab = false
 
--- Buffer-local keymaps
-local opts = { noremap = true, silent = true, buffer = true }
+local function map(mode, keys, action, desc)
+	vim.keymap.set(mode, keys, action, {
+		buffer = true,
+		silent = true,
+		desc = "Go: " .. desc,
+	})
+end
 
--- ============================================
--- TEST COMMANDS
--- ============================================
-vim.keymap.set("n", "<leader>ga", "<cmd>GoAddTest<cr>", opts)
-vim.keymap.set("n", "<leader>gt", "<cmd>GoTest<cr>", opts)
-vim.keymap.set("n", "<leader>gT", "<cmd>GoTestFunc<cr>", opts)
-vim.keymap.set("n", "<leader>gf", "<cmd>GoTestFile<cr>", opts)
-vim.keymap.set("n", "<leader>gp", "<cmd>GoTestPkg<cr>", opts)
-vim.keymap.set("n", "<leader>gc", "<cmd>GoCoverage<cr>", opts)
-vim.keymap.set("n", "<leader>gC", "<cmd>GoCoverageClear<cr>", opts)
-vim.keymap.set("n", "<leader>gct", "<cmd>GoCoverageToggle<cr>", opts)
+-- Tests and coverage
+map("n", "<leader>lga", "<cmd>GoAddTest<cr>", "Add test")
+map("n", "<leader>lgt", "<cmd>GoTest<cr>", "Test package")
+map("n", "<leader>lgT", "<cmd>GoTestFunc<cr>", "Test function")
+map("n", "<leader>lgf", "<cmd>GoTestFile<cr>", "Test file")
+map("n", "<leader>lgp", "<cmd>GoTestPkg<cr>", "Test package")
+map("n", "<leader>lgc", "<cmd>GoCoverage<cr>", "Coverage")
+map("n", "<leader>lgC", "<cmd>GoCoverageClear<cr>", "Clear coverage")
+map("n", "<leader>lgu", "<cmd>GoCoverageToggle<cr>", "Toggle coverage")
 
--- ============================================
--- CODE ACTIONS
--- ============================================
-vim.keymap.set("n", "<leader>gj", "<cmd>GoAddTag json<cr>", opts)
-vim.keymap.set("n", "<leader>gy", "<cmd>GoAddTag yaml<cr>", opts)
-vim.keymap.set("n", "<leader>gr", "<cmd>GoRmTag<cr>", opts)
-vim.keymap.set("n", "<leader>gfs", "<cmd>GoFillStruct<cr>", opts)
-vim.keymap.set("n", "<leader>gsw", "<cmd>GoFillSwitch<cr>", opts)
-vim.keymap.set("n", "<leader>ge", "<cmd>GoIfErr<cr>", opts)
+-- Generation and refactoring
+map("n", "<leader>lgj", "<cmd>GoAddTag json<cr>", "Add JSON tags")
+map("n", "<leader>lgy", "<cmd>GoAddTag yaml<cr>", "Add YAML tags")
+map("n", "<leader>lgr", "<cmd>GoRmTag<cr>", "Remove struct tags")
+map("n", "<leader>lgs", "<cmd>GoFillStruct<cr>", "Fill struct")
+map("n", "<leader>lgS", "<cmd>GoFillSwitch<cr>", "Fill switch")
+map("n", "<leader>lge", "<cmd>GoIfErr<cr>", "Insert if err")
+map("v", "<leader>lgj", ":<C-u>GoAddTag json<cr>", "Add JSON tags")
+map("v", "<leader>lgy", ":<C-u>GoAddTag yaml<cr>", "Add YAML tags")
+map("v", "<leader>lgr", ":<C-u>GoRmTag<cr>", "Remove struct tags")
 
--- ============================================
--- CODE NAVIGATION
--- ============================================
-vim.keymap.set("n", "<leader>gA", "<cmd>GoAlt<cr>", opts)
-vim.keymap.set("n", "<leader>gAs", "<cmd>GoAlt!<cr>", opts)
-vim.keymap.set("n", "<leader>gAv", "<cmd>GoAltV<cr>", opts)
-vim.keymap.set("n", "<leader>gi", "<cmd>GoImpl<cr>", opts)
-vim.keymap.set("n", "<leader>gd", "<cmd>GoDoc<cr>", opts)
+-- Navigation, build, and modules
+map("n", "<leader>lgA", "<cmd>GoAlt<cr>", "Alternate test/source")
+map("n", "<leader>lgi", "<cmd>GoImpl<cr>", "Implement interface")
+map("n", "<leader>lgd", "<cmd>GoDoc<cr>", "Documentation")
+map("n", "<leader>lgb", "<cmd>GoBuild<cr>", "Build")
+map("n", "<leader>lgR", "<cmd>GoRun<cr>", "Run")
+map("n", "<leader>lgg", "<cmd>GoGenerate<cr>", "Run go generate")
+map("n", "<leader>lgD", "<cmd>GoDebug<cr>", "Debug")
+map("n", "<leader>lgB", "<cmd>GoBreakToggle<cr>", "Toggle breakpoint")
+map("n", "<leader>lgmt", "<cmd>GoModTidy<cr>", "Mod tidy")
+map("n", "<leader>lgmi", "<cmd>GoModInit<cr>", "Mod init")
+map("n", "<leader>lgmg", "<cmd>GoGet<cr>", "Get dependency")
+map("n", "<leader>lgl", "<cmd>GoLint<cr>", "golangci-lint")
+map("n", "<leader>lgv", "<cmd>GoVet<cr>", "Vet")
+map("n", "<leader>lgI", "<cmd>GoImport<cr>", "Add import")
+map("n", "<leader>lgF", function()
+	require("conform").format({ async = true, formatters = { "goimports", "gofumpt" } })
+end, "Format with Conform")
 
--- ============================================
--- BUILD & RUN
--- ============================================
-vim.keymap.set("n", "<leader>gb", "<cmd>GoBuild<cr>", opts)
-vim.keymap.set("n", "<leader>gR", "<cmd>GoRun<cr>", opts)
-vim.keymap.set("n", "<leader>gdb", "<cmd>GoDebug<cr>", opts)
-vim.keymap.set("n", "<leader>gbb", "<cmd>GoBreakToggle<cr>", opts)
-
--- ============================================
--- DEPENDENCIES
--- ============================================
-vim.keymap.set("n", "<leader>gmt", "<cmd>GoModTidy<cr>", opts)
-vim.keymap.set("n", "<leader>gmi", "<cmd>GoModInit<cr>", opts)
-vim.keymap.set("n", "<leader>gmg", "<cmd>GoGet<cr>", opts)
-
--- ============================================
--- LINTING & FORMATTING
--- ============================================
-vim.keymap.set("n", "<leader>gl", "<cmd>GoLint<cr>", opts)
-vim.keymap.set("n", "<leader>gv", "<cmd>GoVet<cr>", opts)
-vim.keymap.set("n", "<leader>gF", "<cmd>GoFmt<cr>", opts)
-vim.keymap.set("n", "<leader>gI", "<cmd>GoImport<cr>", opts)
-
--- ============================================
--- STRUCT TAGS VISUAL MODE
--- ============================================
-vim.keymap.set("v", "<leader>gj", ":<C-u>GoAddTag json<cr>", opts)
-vim.keymap.set("v", "<leader>gy", ":<C-u>GoAddTag yaml<cr>", opts)
-vim.keymap.set("v", "<leader>gr", ":<C-u>GoRmTag<cr>", opts)
+-- DAP mappings are intentionally buffer-local.
+local dap_ok, dap = pcall(require, "dap")
+if dap_ok then
+	map("n", "<leader>dc", dap.continue, "Debug continue")
+	map("n", "<leader>db", dap.toggle_breakpoint, "Toggle breakpoint")
+	map("n", "<leader>di", dap.step_into, "Step into")
+	map("n", "<leader>do", dap.step_over, "Step over")
+	map("n", "<leader>dO", dap.step_out, "Step out")
+	map("n", "<leader>dr", dap.repl.toggle, "Toggle debug REPL")
+	map("n", "<leader>dl", dap.run_last, "Run last debug session")
+	map("n", "<leader>dt", dap.terminate, "Terminate debug session")
+end

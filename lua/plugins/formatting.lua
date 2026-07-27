@@ -1,21 +1,38 @@
--- ============================================
--- CODE FORMATTING
--- ============================================
+vim.g.format_on_save_enabled = vim.g.format_on_save_enabled ~= false
+
+local function toggle_format_on_save()
+	vim.g.format_on_save_enabled = not vim.g.format_on_save_enabled
+	vim.notify(
+		"Format on save " .. (vim.g.format_on_save_enabled and "enabled" or "disabled"),
+		vim.log.levels.INFO,
+		{ title = "Formatting" }
+	)
+end
 
 return {
 	"stevearc/conform.nvim",
-	event = { "BufWritePre" },
-	cmd = { "ConformInfo" },
+	event = "BufWritePre",
+	cmd = "ConformInfo",
 	keys = {
 		{
-			"<leader>F",
+			"<leader>cf",
 			function()
-				require("conform").format({ async = true, lsp_fallback = true, timeout_ms = 3000 })
+				require("conform").format({ async = true, lsp_format = "fallback", timeout_ms = 3000 })
 			end,
-			mode = "",
+			mode = { "n", "v" },
 			desc = "Format buffer",
 		},
+		{
+			"<leader>uf",
+			toggle_format_on_save,
+			desc = "Toggle format on save",
+		},
 	},
+	init = function()
+		vim.api.nvim_create_user_command("FormatToggle", toggle_format_on_save, {
+			desc = "Toggle global format on save",
+		})
+	end,
 	opts = {
 		formatters_by_ft = {
 			javascript = { "prettier" },
@@ -28,27 +45,39 @@ return {
 			html = { "prettier" },
 			json = { "prettier" },
 			yaml = { "prettier" },
+			["yaml.docker-compose"] = { "prettier" },
 			markdown = { "prettier" },
-			-- Go formatting - imports first, then stricter gofumpt formatting.
 			go = { "goimports", "gofumpt" },
 			java = { "google-java-format" },
+			python = { "ruff_format" },
 			lua = { "stylua" },
-			-- C/C++
-			cpp = { "clang_format" },
 			c = { "clang_format" },
+			cpp = { "clang_format" },
+			sh = { "shfmt" },
+			bash = { "shfmt" },
+			zsh = { "shfmt" },
+			sql = { "sql_formatter" },
+			dart = { "dart_format" },
 		},
 		formatters = {
 			["google-java-format"] = {
 				prepend_args = { "--aosp" },
 			},
 		},
-		format_on_save = function()
+		format_on_save = function(bufnr)
+			if
+				not vim.g.format_on_save_enabled
+				or vim.b[bufnr].format_on_save == false
+				or vim.b[bufnr].bigfile
+			then
+				return
+			end
 			return {
 				timeout_ms = 3000,
-				lsp_fallback = true,
+				lsp_format = "fallback",
 			}
 		end,
-		-- Suppress notifications
-		notify_on_error = false,
+		notify_on_error = true,
+		notify_no_formatters = false,
 	},
 }

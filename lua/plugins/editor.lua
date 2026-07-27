@@ -1,98 +1,80 @@
--- ============================================
--- EDITOR UTILITIES
--- ============================================
-
 return {
-	-- Terminal
 	{
 		"akinsho/toggleterm.nvim",
 		version = "*",
-		config = function()
-			require("toggleterm").setup({
-				size = function(term)
-					if term.direction == "horizontal" then
-						return 15
-					elseif term.direction == "vertical" then
-						return vim.o.columns * 0.4
-					end
-				end,
-				open_mapping = [[<C-\>]],
-				hide_numbers = true,
-				shade_terminals = true,
-				start_in_insert = true,
-				insert_mappings = true,
-				terminal_mappings = true,
-				persist_size = true,
-				direction = "float",
-				close_on_exit = true,
-				shell = vim.o.shell,
-				float_opts = {
-					border = "curved",
-					winblend = 3,
-				},
+		cmd = { "ToggleTerm", "TermExec" },
+		keys = {
+			{ "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "Toggle terminal" },
+			{ "<leader>tf", "<cmd>ToggleTerm direction=float<cr>", desc = "Float terminal" },
+			{ "<leader>th", "<cmd>ToggleTerm direction=horizontal<cr>", desc = "Horizontal terminal" },
+			{ "<leader>tv", "<cmd>ToggleTerm direction=vertical size=80<cr>", desc = "Vertical terminal" },
+		},
+		opts = {
+			size = function(term)
+				if term.direction == "horizontal" then
+					return 15
+				elseif term.direction == "vertical" then
+					return math.floor(vim.o.columns * 0.4)
+				end
+			end,
+			open_mapping = nil,
+			hide_numbers = true,
+			shade_terminals = false,
+			start_in_insert = true,
+			insert_mappings = false,
+			terminal_mappings = false,
+			persist_size = true,
+			direction = "float",
+			close_on_exit = true,
+			shell = vim.o.shell,
+			float_opts = {
+				border = "rounded",
+				winblend = 0,
+			},
+		},
+		config = function(_, opts)
+			require("toggleterm").setup(opts)
+			vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], {
+				desc = "Exit terminal mode",
 			})
 		end,
 	},
-
-	-- Auto pairs
 	{
 		"windwp/nvim-autopairs",
 		event = "InsertEnter",
+		dependencies = { "hrsh7th/nvim-cmp" },
 		config = function()
 			require("nvim-autopairs").setup({})
-			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
 			local cmp = require("cmp")
-			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+			cmp.event:on(
+				"confirm_done",
+				require("nvim-autopairs.completion.cmp").on_confirm_done()
+			)
 		end,
 	},
-
-	-- Auto close tags
 	{
 		"windwp/nvim-ts-autotag",
 		ft = {
+			"astro",
 			"html",
 			"javascript",
-			"typescript",
 			"javascriptreact",
+			"svelte",
+			"typescript",
 			"typescriptreact",
 			"vue",
-			"svelte",
 			"xml",
 		},
-		config = function()
-			require("nvim-ts-autotag").setup({
-				opts = {
-					enable_close = true,
-					enable_rename = true,
-					enable_close_on_slash = false,
-				},
-			})
-		end,
-	},
-
-	-- Comments
-	{
-		"numToStr/Comment.nvim",
-		opts = {},
-	},
-
-	-- Git signs
-	{
-		"lewis6991/gitsigns.nvim",
 		opts = {
-			signs = {
-				add = { text = "+" },
-				change = { text = "~" },
-				delete = { text = "_" },
-				topdelete = { text = "‾" },
-				changedelete = { text = "~" },
+			opts = {
+				enable_close = true,
+				enable_rename = true,
+				enable_close_on_slash = false,
 			},
 		},
 	},
-
-	-- Emmet
 	{
 		"mattn/emmet-vim",
-		ft = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
+		ft = { "css", "html", "javascriptreact", "typescriptreact", "vue" },
 	},
 }
